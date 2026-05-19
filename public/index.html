@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab307俱乐部</title>
+<link rel="icon" href="favicon.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="header">
+  <h1>307 Laboratory</h1>
+  <p>记录每一个值得铭记的科研日常</p>
+</div>
+
+<div class="app-layout">
+  <!-- 左侧导航 -->
+  <nav class="sidebar" id="sidebar">
+    <a class="nav-item active" data-page="posts" onclick="switchPage('posts')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+      </svg>
+      <span>动态</span>
+    </a>
+    <a class="nav-item" data-page="files" onclick="switchPage('files')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/>
+        <polyline points="13 2 13 9 20 9"/>
+      </svg>
+      <span>文件</span>
+    </a>
+    <div class="disk-info" id="diskInfo">
+      <div class="disk-title">存储空间</div>
+      <div class="disk-bar"><div class="disk-fill" id="diskFill"></div></div>
+      <div class="disk-detail" id="diskDetail">加载中...</div>
+    </div>
+  </nav>
+
+  <!-- 右侧主内容 -->
+  <main class="main-content">
+
+    <!-- ========== 动态模块 ========== -->
+    <section class="page-section active" id="posts-section">
+      <div class="post-form">
+        <textarea id="postText" placeholder="今天307发生了什么有趣的事..."></textarea>
+        <div class="preview-area" id="previewArea"></div>
+        <div class="upload-progress" id="uploadProgress">
+          <div class="progress-ring"></div>
+          <p id="progressText">上传中...</p>
+        </div>
+        <div class="form-actions">
+          <label class="upload-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+            图片
+            <input type="file" id="imageInput" accept="image/*" multiple hidden>
+          </label>
+          <label class="upload-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="23 7 16 12 23 17 23 7"/>
+              <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+            </svg>
+            视频
+            <input type="file" id="videoInput" accept="video/*" hidden>
+          </label>
+          <button class="submit-btn" id="submitBtn">发布动态</button>
+        </div>
+      </div>
+      <div class="timeline" id="timeline"></div>
+    </section>
+
+    <!-- ========== 文件模块 ========== -->
+    <section class="page-section" id="files-section">
+      <div class="file-upload-area" id="fileDropArea">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/>
+          <line x1="9" y1="15" x2="15" y2="15"/>
+        </svg>
+        <p>点击或拖拽上传文件</p>
+        <p class="file-hint">支持 Word / Excel / PPT / PDF / TXT / ZIP 等</p>
+        <input type="file" id="docFileInput" hidden>
+      </div>
+      <div class="file-list" id="fileList"></div>
+    </section>
+
+  </main>
+</div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <img id="lightboxImg" src="" alt="预览">
+</div>
+
+<!-- 视频压缩选择弹窗 -->
+<div class="modal-overlay" id="compressModal">
+  <div class="modal-card">
+    <p class="modal-title">视频上传选项</p>
+    <p class="modal-file" id="modalFileName"></p>
+    <p class="modal-hint">压缩：画质清晰 / 体积小，需等待处理<br>原画：无压缩直传，文件较大</p>
+    <div class="modal-btns">
+      <button class="modal-btn primary" id="modalCompress">压缩上传</button>
+      <button class="modal-btn" id="modalOriginal">原画上传</button>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <span>307 Laboratory &copy; 2026/5/18</span>
+  <span class="admin-bar" id="adminBar"><a href="javascript:adminLogin()">管理员</a></span>
+</div>
+
+<script src="js/fe-api.js"></script>
+<script src="js/fe-app.js"></script>
+<script src="js/fe-compress.js"></script>
+<script src="js/fe-posts.js"></script>
+<script src="js/fe-files.js"></script>
+
+</body>
+</html>

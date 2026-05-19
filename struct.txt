@@ -1,0 +1,19 @@
+307lab/
+├── requirements.md              # API 需求文档
+├── public/                      # 前端层
+│   ├── index.html               # HTML 结构
+│   ├── css/
+│   │   └── style.css            # 样式层
+│   └── js/
+│       ├── api.js               # API 通信层
+│       └── app.js               # UI 交互层
+└── server/                      # 后端服务
+    ├── package.json             # 项目配置 / 依赖 / 启动脚本
+    ├── app.js                   # 入口：Express 初始化 + 启动监听
+    ├── config/
+    │   └── db.js                # MySQL 连接池配置
+    ├── middleware/
+    │   └── upload.js            # Multer 上传中间件
+    └── routes/
+        ├── upload.js            # POST /api/upload
+        └── posts.js             # POST/GET/DELETE /api/posts
