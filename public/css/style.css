@@ -517,12 +517,15 @@ body {
 @media (max-width: 640px) {
   .sidebar {
     width: 100%;
+    margin: 0;
     flex-direction: row;
     padding: 0;
     position: static;
     max-height: none;
     border-right: none;
     border-bottom: 1px solid #e8e8e8;
+    border-radius: 0;
+    box-shadow: none;
     display: flex;
     overflow-x: auto;
   }
