@@ -48,11 +48,21 @@ function isAdmin() {
 }
 
 /** 管理员登录 */
-function adminLogin() {
+async function adminLogin() {
   var pw = prompt('请输入管理员密码：');
   if (!pw) return;
-  sessionStorage.setItem('admin_pw', pw);
-  location.reload();
+  try {
+    var res = await fetch('/api/admin/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pw })
+    });
+    if (!res.ok) { alert('密码错误'); return; }
+    sessionStorage.setItem('admin_pw', pw);
+    location.reload();
+  } catch(e) {
+    alert('验证失败，请检查网络');
+  }
 }
 
 /** 退出管理员 */
