@@ -32,7 +32,7 @@ pool.query('CREATE TABLE IF NOT EXISTS files (' +
   'type VARCHAR(100),' +
   'url VARCHAR(500) NOT NULL,' +
   'created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP' +
-')');
+') DEFAULT CHARSET=utf8mb4');
 
 /** POST / — 上传文件到 uploads/docs/ */
 router.post('/', upload.single('file'), async (req, res) => {
