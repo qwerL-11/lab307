@@ -4,8 +4,8 @@
 var MAX_MEDIA = 9;
 /** 图片最大 20MB */
 var MAX_IMAGE_SIZE = 20 * 1024 * 1024;
-/** 视频最大 2GB */
-var MAX_VIDEO_SIZE = 2 * 1024 * 1024 * 1024;
+/** 视频最大 1GB */
+var MAX_VIDEO_SIZE = 1 * 1024 * 1024 * 1024;
 
 /** 待发布的媒体队列 [{ file: File, type: 'image'|'video' }] */
 var pendingMedia = [];
