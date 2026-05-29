@@ -36,8 +36,13 @@ function compressImage(file) {
 }
 
 /**
- * 压缩视频文件（canvas 绘帧 + video 采音频 + MediaRecorder）
+ * 压缩视频文件（video.captureStream + MediaRecorder · 2x 加速 · 24fps）
  *   保持原始分辨率 · 码率自适应：1080p=15Mbps, 2K=27Mbps, 4K=60Mbps
+ *
+ *   调优参考（在浏览器控制台可动态调整）：
+ *   - rate = 2    压缩倍速（1-4，越大越快但越容易掉帧）
+ *   - fps  = 24   采集帧率（15-30，越低越快文件越小）
+ *
  * @param {File} file 原始视频文件
  * @param {Function} onProgress 进度回调 (0-100)
  * @returns {Promise<File>} 压缩后的文件
@@ -47,45 +52,29 @@ function compressVideo(file, onProgress) {
     var video = document.createElement('video');
     var url = URL.createObjectURL(file);
     video.src = url;
-    video.preload = 'metadata';
+    video.preload = 'auto';
     video.muted = true;
+    video.playsInline = true;
 
     video.onloadedmetadata = function() {
       var w = video.videoWidth;
       var h = video.videoHeight;
+      var duration = video.duration;
 
-      /*
-        码率自适应：以 1080p=15Mbps 为基准
-        ┌──────────────┬───────────────┬─────────────────────────┐
-        │ 参数           │ 当前值          │ 改大 → 更清晰 / 文件更大    │
-        ├──────────────┼───────────────┼─────────────────────────┤
-        │ 基准码率      │ 15000000(15M) │ 1080p 输出码率 = 这个值      │
-        │ 最低码率      │ 5000000(5M)   │ 小视频不会过于模糊            │
-        │ 最高码率      │ 60000000(60M) │ 4K 不会超过这个值            │
-        └──────────────┴───────────────┴─────────────────────────┘
-      */
+      // 码率自适应：1080p=15Mbps 基准
       var basePixels = 1920 * 1080;
       var bitrate = Math.round((w * h / basePixels) * 15000000);
       bitrate = Math.max(5000000, Math.min(60000000, bitrate));
 
-      var canvas = document.createElement('canvas');
-      canvas.width = w;
-      canvas.height = h;
-      var ctx = canvas.getContext('2d');
-      var canvasStream = canvas.captureStream(30);
-
-      try {
-        var vidStream = video.captureStream();
-        vidStream.getAudioTracks().forEach(function(t) {
-          canvasStream.addTrack(t);
-        });
-      } catch(e) {}
+      // 采集帧率：长视频用 24fps 加速，短视频用 30fps 保画质
+      var fps = duration > 30 ? 24 : 30;
+      var stream = video.captureStream(fps);
 
       var mime = 'video/webm;codecs=vp8';
       if (!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm';
 
       var chunks = [];
-      var recorder = new MediaRecorder(canvasStream, {
+      var recorder = new MediaRecorder(stream, {
         mimeType: mime,
         videoBitsPerSecond: bitrate
       });
@@ -101,17 +90,12 @@ function compressVideo(file, onProgress) {
         resolve(new File([blob], newName, { type: mime }));
       };
 
-      function drawFrame() {
-        if (video.paused || video.ended) return;
-        ctx.drawImage(video, 0, 0, w, h);
-        requestAnimationFrame(drawFrame);
-      }
-
-      video.addEventListener('play', drawFrame);
+      // 2x 加速编码：视频播多快 MediaRecorder 就收多快
+      video.playbackRate = 2.0;
 
       video.ontimeupdate = function() {
-        if (onProgress && video.duration) {
-          onProgress(Math.min(99, Math.round((video.currentTime / video.duration) * 100)));
+        if (onProgress && duration) {
+          onProgress(Math.min(99, Math.round((video.currentTime / duration) * 100)));
         }
       };
 
