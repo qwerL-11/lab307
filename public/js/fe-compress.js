@@ -90,9 +90,6 @@ function compressVideo(file, onProgress) {
         resolve(new File([blob], newName, { type: mime }));
       };
 
-      // 2x 加速编码：视频播多快 MediaRecorder 就收多快
-      video.playbackRate = 2.0;
-
       video.ontimeupdate = function() {
         if (onProgress && duration) {
           onProgress(Math.min(99, Math.round((video.currentTime / duration) * 100)));
