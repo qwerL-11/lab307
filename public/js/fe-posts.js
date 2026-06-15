@@ -10,12 +10,14 @@ var MAX_VIDEO_SIZE = 1 * 1024 * 1024 * 1024;
 /** 待发布的媒体队列 [{ file: File, type: 'image'|'video' }] */
 var pendingMedia = [];
 
+var currentPage = 1;
 var imageInput = document.getElementById('imageInput');
 var videoInput = document.getElementById('videoInput');
 var postText = document.getElementById('postText');
 var submitBtn = document.getElementById('submitBtn');
 var previewArea = document.getElementById('previewArea');
 var timeline = document.getElementById('timeline');
+var pagination = document.getElementById('pagination');
 var uploadProgress = document.getElementById('uploadProgress');
 var progressText = document.getElementById('progressText');
 
@@ -154,7 +156,7 @@ submitBtn.addEventListener('click', async function() {
     postText.value = '';
     pendingMedia = [];
     renderPreviews();
-    loadPosts();
+    loadPosts(1);
   } catch (err) {
     alert('发布失败: ' + err.message);
   }
@@ -167,18 +169,25 @@ submitBtn.addEventListener('click', async function() {
 async function handleDelete(id) {
   if (!confirm('确定删除这条记录吗？')) return;
   await removePost(id);
-  loadPosts();
+  loadPosts(currentPage);
 }
 
-/** 加载并渲染所有动态到时间线 */
-async function loadPosts() {
-  var posts;
+/** 加载并渲染动态到时间线 */
+async function loadPosts(page) {
+  page = page || currentPage;
+  var data;
   try {
-    posts = await listPosts();
+    data = await listPosts(page, 20);
   } catch (err) {
     timeline.innerHTML = '<div class="empty-state"><p>加载失败</p></div>';
+    pagination.innerHTML = '';
     return;
   }
+
+  currentPage = data.page;
+  var posts = data.list;
+  var total = data.total;
+  var totalPages = Math.ceil(total / data.pageSize);
 
   if (posts.length === 0) {
     timeline.innerHTML =
@@ -186,6 +195,7 @@ async function loadPosts() {
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' +
       '<path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>' +
       '</svg><p>还没有记录，写下第一条吧</p></div>';
+    pagination.innerHTML = '';
     return;
   }
 
@@ -220,6 +230,49 @@ async function loadPosts() {
       mediaHtml +
       '</div>';
   }).join('');
+
+  renderPagination(currentPage, totalPages);
+}
+
+/** 渲染分页导航 */
+function renderPagination(page, totalPages) {
+  if (totalPages <= 1) {
+    pagination.innerHTML = '';
+    return;
+  }
+
+  var html = '';
+  html += '<button class="page-btn" ' + (page <= 1 ? 'disabled' : '') + ' onclick="goToPage(' + (page - 1) + ')">上一页</button>';
+
+  // 计算显示的页码范围
+  var start = Math.max(1, page - 2);
+  var end = Math.min(totalPages, page + 2);
+
+  if (start > 1) {
+    html += '<button class="page-btn" onclick="goToPage(1)">1</button>';
+    if (start > 2) html += '<span class="page-ellipsis">...</span>';
+  }
+
+  for (var i = start; i <= end; i++) {
+    html += '<button class="page-btn' + (i === page ? ' active' : '') + '" onclick="goToPage(' + i + ')">' + i + '</button>';
+  }
+
+  if (end < totalPages) {
+    if (end < totalPages - 1) html += '<span class="page-ellipsis">...</span>';
+    html += '<button class="page-btn" onclick="goToPage(' + totalPages + ')">' + totalPages + '</button>';
+  }
+
+  html += '<button class="page-btn" ' + (page >= totalPages ? 'disabled' : '') + ' onclick="goToPage(' + (page + 1) + ')">下一页</button>';
+
+  pagination.innerHTML = html;
+}
+
+/** 跳转到指定页 */
+function goToPage(page) {
+  if (page < 1) return;
+  loadPosts(page);
+  // 滚动到时间线顶部
+  timeline.scrollIntoView({ behavior: 'smooth' });
 }
 
 loadPosts();

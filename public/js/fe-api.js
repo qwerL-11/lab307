@@ -33,15 +33,22 @@ function createPost(text, media) {
   });
 }
 
-/** 获取动态列表 */
-function listPosts() {
-  return api('/api/posts').then(function(r) {
-    return (r.list || []).map(function(p) {
-      p.media = (p.images || []).map(function(url) {
-        return { url: url, type: /\.(mp4|mov|webm|avi)$/i.test(url) ? 'video' : 'image' };
-      });
-      return p;
-    });
+/** 获取动态列表，支持分页 */
+function listPosts(page, pageSize) {
+  page = page || 1;
+  pageSize = pageSize || 20;
+  return api('/api/posts?page=' + page + '&pageSize=' + pageSize).then(function(r) {
+    return {
+      list: (r.list || []).map(function(p) {
+        p.media = (p.images || []).map(function(url) {
+          return { url: url, type: /\.(mp4|mov|webm|avi)$/i.test(url) ? 'video' : 'image' };
+        });
+        return p;
+      }),
+      total: r.total || 0,
+      page: r.page || page,
+      pageSize: r.pageSize || pageSize
+    };
   });
 }
 
